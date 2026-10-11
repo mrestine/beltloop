@@ -1,81 +1,73 @@
-import { useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import ModelSelect from '../../components/ModelSelect';
+import { useEffect, useState } from "react";
+import Sessions from "./Sessions";
+import ChatWindow from "./ChatWindow";
+
+export interface Message {
+  id?: number,
+  localId?: string, // this is used for greedy loading
+  role: string,
+  content: string,
+}
+
+export interface MessageUpdate {
+  id?: number,
+  content?: string,
+}
 
 function Chat() {
-  const [response, setResponse] = useState<string>('awaiting message');
-  const [message, setMessage] = useState<string>('');
-  const [model, setModel] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
+  const [selectedSession, setSelectedSession] = useState<number | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
 
-  function handleInputChange(ev: React.ChangeEvent<HTMLInputElement>) {
-    const newValue = ev.target.value;
-    setMessage(newValue);
+  function handleSessionSelect(sessionId: number) {
+    setSelectedSession(sessionId);
   }
 
-  function sendMessage() {
-    setLoading(true);
-    setResponse('');
-    fetch('http://localhost:8000/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'Application/JSON' },
-      body: JSON.stringify({ message, model }),
-    }).then(async (res) => {
-      const reader = res.body!.getReader();
-      if (!res.ok || !reader) {
-        alert('error');
-        console.log(res);
+  function appendMessage(message: Message) {
+    setMessages(prev => [...prev, message]);
+  }
+
+  function updateMessage(uuid: string, { id, content }: MessageUpdate) {
+    setMessages(prev => {
+      const idx = prev.findLastIndex(m => m.localId === uuid);
+      if (idx === -1) return prev;
+      const next = [...prev];
+      if (id) {
+        next[idx] = { ...next[idx], id };
       }
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      setResponse('');
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-
-        for (const line of lines) {
-          if (!line) continue;
-          const event = JSON.parse(line);
-          if (event.data) {
-            setResponse((prev) => prev + event.data);
-            // TODO: scroll to bottom
-          } else if (event.done) {
-            console.log('message finished', event);
-            setMessage('');
-            setLoading(false);
-          } else if (event.error) {
-            console.error(event);
-            setMessage('');
-            setResponse((prev) => prev + '- an error occurred.');
-            setLoading(false);
-          }
-        }
+      if (content) {
+        next[idx] = { ...next[idx], content: next[idx].content + content };
       }
+      return next;
     });
   }
 
-  function handleModelChange(newModel: string) {
-    setModel(newModel);
-  }
+  useEffect(() => {
+    if (selectedSession) {
+      fetch(`http://localhost:8000/messages-for-session/${selectedSession}`)
+        .then(res => res.json())
+        .then(data => setMessages(data));
+    } else {
+      setMessages([]);
+    }
+  }, [selectedSession]);
 
   return (
     <>
-      <div className="chatWindow">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-          {response || 'awaiting response...'}
-        </ReactMarkdown>
+      <Sessions
+        selectedSession={selectedSession}
+        handleSessionSelect={handleSessionSelect}
+      />
+      <div>
+        {messages.map(m => <div key={m.localId || m.id}>{m.role}: {m.content}</div>)}
       </div>
-      <input type="text" value={message} onChange={handleInputChange} disabled={loading} />
-      <button onClick={sendMessage} disabled={!message || loading}>
-        send
-      </button>
-      <ModelSelect onChange={handleModelChange} />
+      {selectedSession
+        ? <ChatWindow
+          sessionId={selectedSession}
+          appendMessage={appendMessage}
+          updateMessage={updateMessage}
+        />
+        : <div>select a session</div>
+      }
     </>
   );
 }

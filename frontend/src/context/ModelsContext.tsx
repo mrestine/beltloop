@@ -12,7 +12,7 @@ export function ModelsProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:8000/models')
+    fetch('http://localhost:8000/platform/models')
       .then((res) => res.json())
       .then((data) => setModels(data.models.map((m: any) => m.model)))
       .finally(() => setLoading(false));
