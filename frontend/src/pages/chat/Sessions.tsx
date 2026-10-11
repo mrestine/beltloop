@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useEffectOnce } from "react-use";
 
 interface Session {
   id: number,
@@ -127,9 +128,9 @@ function Sessions({
     }).then(fetchSessions)
   }
 
-  useEffect(() => {
+  useEffectOnce(() => {
     fetchSessions();
-  }, []);
+  });
   useEffect(() => {
     console.log('getting chat items for session...');
   }, [selectedSession])

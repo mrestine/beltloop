@@ -42,13 +42,11 @@ function Chat() {
   }
 
   useEffect(() => {
-    if (selectedSession) {
-      fetch(`http://localhost:8000/messages-for-session/${selectedSession}`)
-        .then(res => res.json())
-        .then(data => setMessages(data));
-    } else {
-      setMessages([]);
-    }
+    const loadMessages = selectedSession
+      ? fetch(`http://localhost:8000/messages-for-session/${selectedSession}`).then(res => res.json())
+      : Promise.resolve([]);
+
+    loadMessages.then(data => setMessages(data));
   }, [selectedSession]);
 
   return (

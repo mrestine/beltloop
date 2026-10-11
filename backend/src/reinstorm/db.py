@@ -1,12 +1,14 @@
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlmodel import SQLModel
-from sqlalchemy.ext.asyncio import create_async_engine  
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 engine = create_async_engine("sqlite+aiosqlite:///reinstorm.db")
 
+
 async def get_session():
     async with AsyncSession(engine) as session:
         yield session
+
 
 async def init_db():
     async with engine.begin() as conn:

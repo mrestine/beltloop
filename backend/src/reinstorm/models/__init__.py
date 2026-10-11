@@ -1,2 +1,2 @@
-from .session import Session
-from .message import Message
+from .message import Message as Message
+from .session import Session as Session

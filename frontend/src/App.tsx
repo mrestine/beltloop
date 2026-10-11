@@ -2,7 +2,7 @@ import './App.css';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Chat from './pages/chat/Chat';
 import Home from './pages/home/Home';
-import { ModelsProvider } from './context/ModelsContext';
+import { ModelsProvider } from './context/ModelsProvider';
 
 function App() {
   return (
