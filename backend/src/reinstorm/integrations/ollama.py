@@ -33,6 +33,7 @@ def stream_chat_completion(history: list[ChatItem], model: str):
                     json.dumps(
                         {
                             "done": True,
+                            "prompt_eval_count": chunk.prompt_eval_count,
                             "eval_count": chunk.eval_count,
                             "eval_duration": chunk.eval_duration,
                         }

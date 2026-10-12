@@ -65,6 +65,9 @@ function ChatInput({ sessionId, appendMessage, updateMessage }: ChatWindowProps)
           if (event.data) {
             updateMessage(assistantMessageUuid, { content: event.data });
           } else if (event.done) {
+            updateMessage(assistantMessageUuid, {
+              tokens: event.prompt_eval_count + event.eval_count,
+            });
             setLoading(false);
           } else if (event.error) {
             updateMessage(assistantMessageUuid, { content: event.error });

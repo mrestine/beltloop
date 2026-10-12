@@ -1,5 +1,5 @@
 import './Chat.css';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Sessions from './Sessions';
 import ChatInput from './ChatInput';
 import ChatItem from './ChatItem';
@@ -18,7 +18,7 @@ function Chat() {
     setMessages((prev) => [...prev, message]);
   }
 
-  function updateMessage(uuid: string, { id, content }: MessageUpdate) {
+  function updateMessage(uuid: string, { id, content, tokens }: MessageUpdate) {
     setMessages((prev) => {
       const idx = prev.findLastIndex((m) => m.localId === uuid);
       if (idx === -1) return prev;
@@ -28,6 +28,9 @@ function Chat() {
       }
       if (content) {
         next[idx] = { ...next[idx], content: next[idx].content + content };
+      }
+      if (tokens) {
+        next[idx] = { ...next[idx], tokens };
       }
       return next;
     });
@@ -54,11 +57,16 @@ function Chat() {
     }
   }, [messages]);
 
+  const tokenUsage = useMemo(() => {
+    if (!messages.length) return null;
+    const tokenIdx = messages.findLastIndex((m) => m.role === 'assistant' && m.tokens);
+    return tokenIdx === -1 ? null : messages[tokenIdx].tokens;
+  }, [messages]);
+
   return (
     <div className="chat-container">
       <Sessions selectedSession={selectedSession} handleSessionSelect={handleSessionSelect} />
       <div className="chat-item-wrap" ref={messagesPaneRef}>
-        {/* TODO: Chat item should have time/token usage */}
         {messages.map((m) => (
           <ChatItem key={m.localId || m.id} message={m} />
         ))}
@@ -72,6 +80,7 @@ function Chat() {
       ) : (
         <div>select a session</div>
       )}
+      <div className="session-usage">{tokenUsage} tokens</div>
     </div>
   );
 }

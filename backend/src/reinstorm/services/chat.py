@@ -16,15 +16,21 @@ async def stream_and_persist_reply(
         history_with_context = [{"role": "system", "content": context_content}, *history]
 
     full_reply = ""
+    total_tokens = None
+
     for line in stream_chat_completion(history_with_context, model):
         event = json.loads(line)
         if "data" in event:
             full_reply += event["data"]
         elif "error" in event:
             full_reply += f"\n\n[error: {event['error']}]"
+        elif event.get("done"):
+            total_tokens = event["prompt_eval_count"] + event["eval_count"]
         yield line
 
-    assistant_message = Message(session_id=session_id, role="assistant", content=full_reply)
+    assistant_message = Message(
+        session_id=session_id, role="assistant", tokens=total_tokens, content=full_reply
+    )
     db.add(assistant_message)
     await db.commit()
     await db.refresh(assistant_message)
