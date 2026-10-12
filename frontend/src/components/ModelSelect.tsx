@@ -1,13 +1,13 @@
-import { useModels } from '../context/ModelsContext';
+import { useProperties } from '../context/PropertiesContext';
 
 type ModelSelectProps = {
   onChange?: (newModel: string) => void;
 };
 
 function ModelSelect(props: ModelSelectProps) {
-  const { models, loading } = useModels();
+  const { models, loading } = useProperties();
   const { onChange = () => {} } = props;
-  const options = [...models];
+  const options = [...(models ?? [])];
 
   function handleChange(ev: React.ChangeEvent<HTMLSelectElement>) {
     onChange(ev.target.value);

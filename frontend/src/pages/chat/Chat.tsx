@@ -4,10 +4,12 @@ import Sessions from './Sessions';
 import ChatInput from './ChatInput';
 import ChatItem from './ChatItem';
 import { type Message, type MessageUpdate } from '@reinstorm/types';
+import TokenUsage from './TokenUsage';
 
 function Chat() {
   const [selectedSession, setSelectedSession] = useState<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const wasAtBottomRef = useRef(true);
   const messagesPaneRef = useRef<HTMLDivElement>(null);
 
   function handleSessionSelect(sessionId: number) {
@@ -45,14 +47,15 @@ function Chat() {
     loadMessages.then((data) => setMessages(data));
   }, [selectedSession]);
 
+  function handleScroll(ev: React.UIEvent<HTMLDivElement>) {
+    const pane = ev.currentTarget;
+    const distanceFromBottom = pane.scrollHeight - pane.scrollTop - pane.clientHeight;
+    wasAtBottomRef.current = distanceFromBottom < 4;
+  }
   useEffect(() => {
     const pane = messagesPaneRef.current;
     if (!pane) return;
-
-    const distanceFromBottom = pane.scrollHeight - pane.scrollTop - pane.clientHeight;
-    const isNearBottom = distanceFromBottom < 32;
-
-    if (isNearBottom) {
+    if (wasAtBottomRef.current) {
       pane.scrollTop = pane.scrollHeight;
     }
   }, [messages]);
@@ -66,7 +69,7 @@ function Chat() {
   return (
     <div className="chat-container">
       <Sessions selectedSession={selectedSession} handleSessionSelect={handleSessionSelect} />
-      <div className="chat-item-wrap" ref={messagesPaneRef}>
+      <div className="chat-item-wrap" ref={messagesPaneRef} onScroll={handleScroll}>
         {messages.map((m) => (
           <ChatItem key={m.localId || m.id} message={m} />
         ))}
@@ -80,7 +83,7 @@ function Chat() {
       ) : (
         <div>select a session</div>
       )}
-      <div className="session-usage">{tokenUsage} tokens</div>
+      <TokenUsage used={tokenUsage} />
     </div>
   );
 }

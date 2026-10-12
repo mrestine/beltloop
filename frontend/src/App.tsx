@@ -2,7 +2,7 @@ import './App.css';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import Chat from './pages/chat/Chat';
 import Home from './pages/home/Home';
-import { ModelsProvider } from './context/ModelsProvider';
+import { PropertiesProvider } from './context/PropertiesProvider';
 import Context from './pages/context/Context';
 
 function App() {
@@ -15,13 +15,13 @@ function App() {
           <Link to="/context">Context</Link>
         </nav>
         <div className="app-content">
-          <ModelsProvider>
+          <PropertiesProvider>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/chat" element={<Chat />} />
               <Route path="/context" element={<Context />} />
             </Routes>
-          </ModelsProvider>
+          </PropertiesProvider>
         </div>
       </div>
     </BrowserRouter>

@@ -5,8 +5,10 @@ from ollama import Client
 
 OLLAMA_HOST = "http://localhost:11434"
 DEFAULT_MODEL = "qwen2.5:7b-instruct"
+TEMPERATURE = 0
+MAX_CONTEXT = 4096
 client = Client(host=OLLAMA_HOST, headers={})
-chatArgs = {"options": {"temperature": 0, "num_ctx": 4096}, "stream": True}
+chatArgs = {"options": {"temperature": TEMPERATURE, "num_ctx": MAX_CONTEXT}, "stream": True}
 
 
 class ChatItem(TypedDict):
