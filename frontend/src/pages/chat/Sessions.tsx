@@ -1,24 +1,18 @@
-import { useEffect, useState } from "react";
-import { useEffectOnce } from "react-use";
-
-interface Session {
-  id: number,
-  title: string,
-  model: string,
-  created_at: Date,
-}
+import { useEffect, useState } from 'react';
+import { useEffectOnce } from 'react-use';
+import { type Session } from '@reinstorm/types';
 
 interface SessionsProps {
-  selectedSession: number | null
-  handleSessionSelect: (id: number) => void
+  selectedSession: number | null;
+  handleSessionSelect: (id: number) => void;
 }
 
 interface SessionRowProps {
-  session?: Session,
-  isSelected: boolean,
-  handleSessionDelete: (id: number) => void,
-  handleSessionSave: (session: Partial<Session>) => void,
-  handleSessionSelect: (id: number) => void,
+  session?: Session;
+  isSelected: boolean;
+  handleSessionDelete: (id: number) => void;
+  handleSessionSave: (session: Partial<Session>) => void;
+  handleSessionSelect: (id: number) => void;
 }
 
 function SessionRow({
@@ -28,8 +22,7 @@ function SessionRow({
   handleSessionSave,
   handleSessionSelect,
 }: SessionRowProps) {
-
-  const [isEditing, setIsEditing] = useState<boolean>(false)
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [inputValue, setInputValue] = useState<string>(session?.title || '');
 
   function handleSave() {
@@ -42,37 +35,40 @@ function SessionRow({
 
   return (
     <div>
-      {!session && !isEditing ? <>
-        <button onClick={() => setIsEditing(true)}>+</button>
-      </> : isEditing ? <>
-        <input value={inputValue} onChange={(ev) => setInputValue(ev.target.value)} />
-        <button onClick={() => handleSave()}>save</button>
-        <button onClick={() => setIsEditing(false)}>back</button>
-      </> : <>
-        <span
-          onClick={() => handleSessionSelect(session!.id)}
-          style={{ color: isSelected ? "darkred" : '' }}
-        >
-          {session!.title}
-        </span>
-        <button onClick={() => setIsEditing(true)}>e</button>
-        <button onClick={() => handleSessionDelete(session!.id)}>x</button>
-      </>}
+      {!session && !isEditing ? (
+        <>
+          <button onClick={() => setIsEditing(true)}>+</button>
+        </>
+      ) : isEditing ? (
+        <>
+          <input value={inputValue} onChange={(ev) => setInputValue(ev.target.value)} />
+          <button onClick={() => handleSave()}>save</button>
+          <button onClick={() => setIsEditing(false)}>back</button>
+        </>
+      ) : (
+        <>
+          <span
+            onClick={() => handleSessionSelect(session!.id)}
+            style={{ color: isSelected ? 'darkred' : '' }}
+          >
+            {session!.title}
+          </span>
+          <button onClick={() => setIsEditing(true)}>e</button>
+          <button onClick={() => handleSessionDelete(session!.id)}>x</button>
+        </>
+      )}
     </div>
-  )
+  );
 }
 
-function Sessions({
-  selectedSession,
-  handleSessionSelect,
-}: SessionsProps) {
+function Sessions({ selectedSession, handleSessionSelect }: SessionsProps) {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   function fetchSessions() {
     fetch('http://localhost:8000/sessions')
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         console.log('sessions', data);
         setSessions(data);
         if (data.length && selectedSession === null) {
@@ -125,7 +121,7 @@ function Sessions({
   function handleSessionDelete(sessionId: number) {
     fetch(`http://localhost:8000/sessions/${sessionId}`, {
       method: 'delete',
-    }).then(fetchSessions)
+    }).then(fetchSessions);
   }
 
   useEffectOnce(() => {
@@ -133,27 +129,30 @@ function Sessions({
   });
   useEffect(() => {
     console.log('getting chat items for session...');
-  }, [selectedSession])
+  }, [selectedSession]);
 
-  return (
-    loading ? <div>sessions loading...</div> :
-      <>
-        {sessions.map(s => <SessionRow
+  return loading ? (
+    <div>sessions loading...</div>
+  ) : (
+    <>
+      {sessions.map((s) => (
+        <SessionRow
           key={s.id}
           session={s}
           isSelected={s.id === selectedSession}
           handleSessionDelete={handleSessionDelete}
           handleSessionSave={handleSessionSave}
           handleSessionSelect={handleSessionSelect}
-        />)}
-        <SessionRow
-          isSelected={false}
-          handleSessionDelete={handleSessionDelete}
-          handleSessionSave={handleSessionSave}
-          handleSessionSelect={handleSessionSelect}
         />
-      </>
-  )
+      ))}
+      <SessionRow
+        isSelected={false}
+        handleSessionDelete={handleSessionDelete}
+        handleSessionSave={handleSessionSave}
+        handleSessionSelect={handleSessionSelect}
+      />
+    </>
+  );
 }
 
 export default Sessions;

@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-export type ModelsContextValue = {
+type ModelsContextValue = {
   models: string[];
   loading: boolean;
 };

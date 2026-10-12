@@ -1,20 +1,17 @@
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import ModelSelect from '../../components/ModelSelect';
-import { type Message, type MessageUpdate } from './Chat';
+import ModelSelect from '@reinstorm/components/ModelSelect';
+import { type Message, type MessageUpdate } from '@reinstorm/types';
 
 interface ChatWindowProps {
-  sessionId: number,
-  appendMessage: (message: Message) => void,
-  updateMessage: (uuid: string, payload: MessageUpdate) => void
+  sessionId: number;
+  appendMessage: (message: Message) => void;
+  updateMessage: (uuid: string, payload: MessageUpdate) => void;
 }
 
-function ChatWindow({
-  sessionId,
-  appendMessage,
-  updateMessage,
-}: ChatWindowProps) {
+// TODO: rename this
+function ChatWindow({ sessionId, appendMessage, updateMessage }: ChatWindowProps) {
   const [content, setContent] = useState<string>('');
   const [model, setModel] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -67,7 +64,8 @@ function ChatWindow({
             updateMessage(userMessageUuid, { id: event.user_message_id });
           } else if (event.assistant_message_id) {
             updateMessage(assistantMessageUuid, { id: event.assistant_message_id });
-          } if (event.data) {
+          }
+          if (event.data) {
             // TODO: scroll to bottom
             updateMessage(assistantMessageUuid, { content: event.data });
           } else if (event.done) {
@@ -85,12 +83,12 @@ function ChatWindow({
     setModel(newModel);
   }
 
+  // TODO: enter to send messages when input is active with react-use
+
   return (
     <>
       <div className="chatWindow">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-
-        </ReactMarkdown>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}></ReactMarkdown>
       </div>
       <input type="text" value={content} onChange={handleInputChange} disabled={loading} />
       <button onClick={sendMessage} disabled={!content || loading}>

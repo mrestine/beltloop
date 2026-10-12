@@ -1,10 +1,7 @@
 import { useState } from 'react';
 import { useEffectOnce } from 'react-use';
 import { ModelsContext } from './ModelsContext';
-
-type OllamaModelInfo = {
-  model: string;
-};
+import { type OllamaModelInfo } from '@reinstorm/types';
 
 export function ModelsProvider({ children }: { children: React.ReactNode }) {
   const [models, setModels] = useState<string[]>([]);
