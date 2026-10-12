@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useEffectOnce } from 'react-use';
 import { type Session } from '@reinstorm/types';
 
@@ -69,7 +69,6 @@ function Sessions({ selectedSession, handleSessionSelect }: SessionsProps) {
     fetch('http://localhost:8000/sessions')
       .then((res) => res.json())
       .then((data) => {
-        console.log('sessions', data);
         setSessions(data);
         // TODO: Change this to persist across nav (local storage?)
         if (data.length && selectedSession === null) {
@@ -128,9 +127,6 @@ function Sessions({ selectedSession, handleSessionSelect }: SessionsProps) {
   useEffectOnce(() => {
     fetchSessions();
   });
-  useEffect(() => {
-    console.log('getting chat items for session...');
-  }, [selectedSession]);
 
   return loading ? (
     <div>sessions loading...</div>

@@ -13,4 +13,4 @@ wheels/
 *.db
 
 # Agent contexts
-context/
+backend/context/
