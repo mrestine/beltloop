@@ -11,3 +11,6 @@ wheels/
 
 # SQLite db
 *.db
+
+# Agent contexts
+context/
