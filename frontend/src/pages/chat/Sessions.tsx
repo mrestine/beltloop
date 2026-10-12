@@ -71,6 +71,7 @@ function Sessions({ selectedSession, handleSessionSelect }: SessionsProps) {
       .then((data) => {
         console.log('sessions', data);
         setSessions(data);
+        // TODO: Change this to persist across nav (local storage?)
         if (data.length && selectedSession === null) {
           handleSessionSelect(data[data.length - 1].id);
         }

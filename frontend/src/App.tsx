@@ -7,16 +7,20 @@ import { ModelsProvider } from './context/ModelsProvider';
 function App() {
   return (
     <BrowserRouter>
-      <nav>
-        <Link to="/">Home</Link>
-        <Link to="/chat">Chat</Link>
-      </nav>
-      <ModelsProvider>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/chat" element={<Chat />} />
-        </Routes>
-      </ModelsProvider>
+      <div className="app-layout">
+        <nav className="app-header">
+          <Link to="/">Home</Link>
+          <Link to="/chat">Chat</Link>
+        </nav>
+        <div className="app-content">
+          <ModelsProvider>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/chat" element={<Chat />} />
+            </Routes>
+          </ModelsProvider>
+        </div>
+      </div>
     </BrowserRouter>
   );
 }

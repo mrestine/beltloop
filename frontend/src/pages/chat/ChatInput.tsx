@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import ModelSelect from '@reinstorm/components/ModelSelect';
 import { type Message, type MessageUpdate } from '@reinstorm/types';
 
@@ -10,8 +8,7 @@ interface ChatWindowProps {
   updateMessage: (uuid: string, payload: MessageUpdate) => void;
 }
 
-// TODO: rename this
-function ChatWindow({ sessionId, appendMessage, updateMessage }: ChatWindowProps) {
+function ChatInput({ sessionId, appendMessage, updateMessage }: ChatWindowProps) {
   const [content, setContent] = useState<string>('');
   const [model, setModel] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -66,7 +63,6 @@ function ChatWindow({ sessionId, appendMessage, updateMessage }: ChatWindowProps
             updateMessage(assistantMessageUuid, { id: event.assistant_message_id });
           }
           if (event.data) {
-            // TODO: scroll to bottom
             updateMessage(assistantMessageUuid, { content: event.data });
           } else if (event.done) {
             setLoading(false);
@@ -83,20 +79,26 @@ function ChatWindow({ sessionId, appendMessage, updateMessage }: ChatWindowProps
     setModel(newModel);
   }
 
-  // TODO: enter to send messages when input is active with react-use
+  const sendDisabled = !content || loading;
+
+  function handleKeyDown(ev: React.KeyboardEvent<HTMLInputElement>) {
+    if (ev.key === 'Enter' && !sendDisabled) {
+      sendMessage();
+    }
+  }
 
   return (
     <>
-      <div className="chatWindow">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}></ReactMarkdown>
-      </div>
-      <input type="text" value={content} onChange={handleInputChange} disabled={loading} />
-      <button onClick={sendMessage} disabled={!content || loading}>
+      <input type="text" value={content} onChange={handleInputChange} onKeyDown={handleKeyDown} />
+      <button onClick={sendMessage} disabled={sendDisabled}>
         send
       </button>
-      <ModelSelect onChange={handleModelChange} />
+      <div>
+        Model:
+        <ModelSelect onChange={handleModelChange} />
+      </div>
     </>
   );
 }
 
-export default ChatWindow;
+export default ChatInput;

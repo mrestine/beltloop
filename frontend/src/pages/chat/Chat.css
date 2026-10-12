@@ -1,0 +1,67 @@
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chat-item-wrap {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  width: calc(100% - 32px);
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px;
+  gap: 8px;
+}
+
+.chat-item {
+  flex-shrink: 0;
+  max-width: 75%;
+  padding: 6px 12px;
+  border: 1px solid #666;
+  border-radius: 8px;
+}
+
+.chat-item.user {
+  align-self: flex-end;
+}
+
+.chat-item.assistant {
+  align-self: flex-start;
+
+  .loader-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    .loader {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #111;
+      animation: bounce 1.4s ease-in-out infinite both;
+      &:nth-child(1) { animation-delay: -.32s; }
+      &:nth-child(2) { animation-delay: -.16s; } 
+      &:nth-child(3) { animation-delay: 0s; } 
+    }
+  }
+
+  p {
+    &:first-of-type {
+      margin-top: 0;
+    }
+    &:last-of-type {
+      margin-bottom: 0;
+    }
+  }
+  pre {
+    background: #eee;
+    padding: 4px 8px;
+    white-space: normal;
+  }
+}
+
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+  30%            { transform: translateY(-4px); opacity: 1; }
+}

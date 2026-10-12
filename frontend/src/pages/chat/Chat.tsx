@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react';
+import './Chat.css';
+import { useEffect, useRef, useState } from 'react';
 import Sessions from './Sessions';
-import ChatWindow from './ChatWindow';
+import ChatInput from './ChatInput';
+import ChatItem from './ChatItem';
 import { type Message, type MessageUpdate } from '@reinstorm/types';
 
 function Chat() {
   const [selectedSession, setSelectedSession] = useState<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const messagesPaneRef = useRef<HTMLDivElement>(null);
 
   function handleSessionSelect(sessionId: number) {
     setSelectedSession(sessionId);
@@ -36,26 +39,32 @@ function Chat() {
           res.json(),
         )
       : Promise.resolve([]);
-
     loadMessages.then((data) => setMessages(data));
   }, [selectedSession]);
 
+  useEffect(() => {
+    const pane = messagesPaneRef.current;
+    if (!pane) return;
+
+    const distanceFromBottom = pane.scrollHeight - pane.scrollTop - pane.clientHeight;
+    const isNearBottom = distanceFromBottom < 32;
+
+    if (isNearBottom) {
+      pane.scrollTop = pane.scrollHeight;
+    }
+  }, [messages]);
+
   return (
-    <>
+    <div className="chat-container">
       <Sessions selectedSession={selectedSession} handleSessionSelect={handleSessionSelect} />
-      <div>
-        {/* TODO: Use a ChatItem comeponent */}
-        {/* TODO: Chat item component should use markdown */}
+      <div className="chat-item-wrap" ref={messagesPaneRef}>
         {/* TODO: Chat item should have time/token usage */}
-        {/* TODO: Assistant chat message should have loading bit */}
         {messages.map((m) => (
-          <div key={m.localId || m.id}>
-            {m.role}: {m.content}
-          </div>
+          <ChatItem key={m.localId || m.id} message={m} />
         ))}
       </div>
       {selectedSession ? (
-        <ChatWindow
+        <ChatInput
           sessionId={selectedSession}
           appendMessage={appendMessage}
           updateMessage={updateMessage}
@@ -63,7 +72,7 @@ function Chat() {
       ) : (
         <div>select a session</div>
       )}
-    </>
+    </div>
   );
 }
 
