@@ -25,16 +25,13 @@ function Context() {
   });
 
   useEffectOnce(() => {
-    Promise.all(
-      ContextFilenamesArray.map((file) =>
-        fetch(`http://localhost:8000/context/${file}`)
-          .then((res) => res.json())
-          .then((data: string) => {
-            setFileContents((prev) => ({ ...prev, [file]: data }));
-            if (tab === file) setInputValue(data);
-          }),
-      ),
-    ).then(() => setLoading(false));
+    fetch('http://localhost:8000/context/all')
+      .then((res) => res.json())
+      .then((data: FileContents) => {
+        setFileContents(data);
+        setInputValue(data[tab]);
+        setLoading(false);
+      });
   });
 
   function saveFile() {

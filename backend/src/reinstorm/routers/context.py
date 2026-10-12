@@ -3,7 +3,7 @@ from typing import Literal
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from ..services.context import read_file, write_file
+from ..services.context import read_all_files, read_file, write_file
 
 router = APIRouter(prefix="/context")
 
@@ -13,6 +13,11 @@ class ContextFileUpdate(BaseModel):
 
 
 ContextFilename = Literal["persona.md", "user.md"]
+
+
+@router.get("/all")
+async def get_context_files():
+    return read_all_files()
 
 
 @router.get("/{filename}")

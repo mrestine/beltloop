@@ -18,6 +18,14 @@ def read_file(filename: str):
         return content
 
 
+def read_all_files():
+    content = {}
+    for name in FILE_NAMES:
+        with open(CONTEXT_DIR / name, "r", encoding="utf-8") as file:
+            content[name] = file.read()
+    return content
+
+
 def write_file(filename: str, content: str):
     with open(CONTEXT_DIR / filename, "w", encoding="utf-8") as file:
         file.write(content)
