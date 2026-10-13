@@ -8,7 +8,7 @@ DEFAULT_MODEL = "qwen2.5:7b-instruct"
 TEMPERATURE = 0
 MAX_CONTEXT = 4096
 client = Client(host=OLLAMA_HOST, headers={})
-chatArgs = {"options": {"temperature": TEMPERATURE, "num_ctx": MAX_CONTEXT}, "stream": True}
+chatArgs = {"options": {"temperature": TEMPERATURE, "num_ctx": MAX_CONTEXT}}
 
 
 class ChatItem(TypedDict):
@@ -24,6 +24,7 @@ def stream_chat_completion(history: list[ChatItem], model: str):
     try:
         response = client.chat(
             **chatArgs,
+            stream=True,
             model=model or DEFAULT_MODEL,
             messages=history,
         )
@@ -44,3 +45,12 @@ def stream_chat_completion(history: list[ChatItem], model: str):
                 )
     except Exception as e:  # noqa: BLE001 — any failure here becomes a client-visible error event
         yield json.dumps({"error": str(e)}) + "\n"
+
+
+def chat_sync(history: list[ChatItem], model: str):
+    return client.chat(
+        **chatArgs,
+        stream=False,
+        model=model or DEFAULT_MODEL,
+        messages=history,
+    )

@@ -27,6 +27,7 @@ function AssistantContent({ message }: ChatItemProps) {
   );
 }
 
+// TODO: handle system messages different for compacted stuff
 function ChatItem({ message }: ChatItemProps) {
   return (
     <div className={`chat-item ${message.role}`}>

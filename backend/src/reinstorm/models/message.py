@@ -15,5 +15,6 @@ class Message(SQLModel, table=True):
     session_id: int = Field(foreign_key="session.id")
     role: Role
     content: str
-    tokens: int | None = Field(default=None)
+    is_compacted: bool = False
+    tokens: int | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
