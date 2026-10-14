@@ -7,6 +7,31 @@ from ..models import Message
 from .context import read_all_files
 
 
+async def handle_chat_turn(db, payload):
+    usage = await get_token_usage(db, payload.session_id)
+    if usage > MAX_CONTEXT:
+        async for line in compact_chat_messages(db, payload.session_id, payload.model, usage):
+            yield line
+
+    message = Message(**payload.model_dump(exclude={"model"}), role="user")
+    db.add(message)
+    await db.commit()
+    await db.refresh(message)
+
+    statement = (
+        select(Message)
+        .where(Message.session_id == payload.session_id, Message.is_compacted == False)
+        .order_by(Message.created_at)
+    )
+    messages = (await db.exec(statement)).all()
+    history = [{"role": m.role, "content": m.content} for m in messages]
+
+    async for line in stream_and_persist_reply(
+        db, payload.session_id, history, payload.model, message.id
+    ):
+        yield line
+
+
 async def stream_and_persist_reply(
     db, session_id: int, history: list[dict], model: str, user_message_id: str
 ):
@@ -39,7 +64,7 @@ async def stream_and_persist_reply(
     yield json.dumps({"assistant_message_id": assistant_message.id}) + "\n"
 
 
-async def compact_if_needed(db, session_id: int, model: str):
+async def get_token_usage(db, session_id: int):
     last_with_tokens = (
         await db.exec(
             select(Message)
@@ -48,31 +73,40 @@ async def compact_if_needed(db, session_id: int, model: str):
             .limit(1)
         )
     ).first()
-
-    if last_with_tokens and last_with_tokens.tokens > MAX_CONTEXT:
-        await compact_chat_messages(db, session_id, model)
+    return last_with_tokens.tokens if last_with_tokens else 0
 
 
-async def compact_chat_messages(db, session_id: int, model: str):
+async def compact_chat_messages(db, session_id: int, model: str, usage: int):
+    yield json.dumps({"compacting": {"in_progress": True}}) + "\n"
     statement = (
         select(Message)
         .where(Message.session_id == session_id, Message.is_compacted == False)
         .order_by(Message.created_at)
     )
 
-    compact_prompt = {
-        "role": "system",
-        "content": "You are running out of context space. Summarize the following messages into a single message to free up space.",
-    }
     history_messages = (await db.exec(statement)).all()
-    history = [{"role": m.role, "content": m.content} for m in history_messages]
-    history_with_prompt = [compact_prompt, *history]
-    response = chat_sync(history=history_with_prompt, model=model)
+    formatted_history = "\n".join(f"{m.role}: {m.content}" for m in history_messages)
+
+    # this has to be role: user so the model better understands a reply is needed
+    # without role: user and a simple history array, the compaction response is empty.
+    compact_prompt = {
+        "role": "user",
+        "content": (
+            "Summarize the conversation below into a single, concise paragraph of plain prose. "
+            "Preserve important facts, names, decisions, and any unresolved questions the user raised. "
+            "Write it as neutral background notes for continuing this conversation later - "
+            "not as a message to the user, with no commentary about the summarization itself."
+            "Be as brief as possible while keeping anything that matters for future replies.\n\n"
+            f"Transcript:\n{formatted_history}"
+        ),
+    }
+    response = chat_sync(history=[compact_prompt], model=model)
 
     compacted_message = Message(
         session_id=session_id,
         role="system",
         content=response.message.content,
+        display_content=f"Compaction complete. Tokens saved: {usage - response.eval_count}",
         tokens=response.eval_count,
     )
     db.add(compacted_message)
@@ -81,3 +115,14 @@ async def compact_chat_messages(db, session_id: int, model: str):
 
     await db.commit()
     await db.refresh(compacted_message)
+    yield (
+        json.dumps(
+            {
+                "compacting": {
+                    "in_progress": False,
+                    "message": compacted_message.model_dump(mode="json"),
+                }
+            }
+        )
+        + "\n"
+    )

@@ -18,9 +18,11 @@ function ChatInput({ sessionId, appendMessage, updateMessage }: ChatWindowProps)
     setContent(newValue);
   }
 
+  // TODO: pull out the incoming message stuff; it doesn't belong here
   function sendMessage() {
     setLoading(true);
     const userMessageUuid = crypto.randomUUID();
+    const compactingUuid = crypto.randomUUID();
     appendMessage({
       content,
       role: 'user',
@@ -41,11 +43,6 @@ function ChatInput({ sessionId, appendMessage, updateMessage }: ChatWindowProps)
       const decoder = new TextDecoder();
       let buffer = '';
 
-      appendMessage({
-        content: '',
-        localId: assistantMessageUuid,
-        role: 'assistant',
-      });
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -59,6 +56,11 @@ function ChatInput({ sessionId, appendMessage, updateMessage }: ChatWindowProps)
           const event = JSON.parse(line);
           if (event.user_message_id) {
             updateMessage(userMessageUuid, { id: event.user_message_id });
+            appendMessage({
+              content: '',
+              localId: assistantMessageUuid,
+              role: 'assistant',
+            });
           } else if (event.assistant_message_id) {
             updateMessage(assistantMessageUuid, { id: event.assistant_message_id });
           }
@@ -72,6 +74,19 @@ function ChatInput({ sessionId, appendMessage, updateMessage }: ChatWindowProps)
           } else if (event.error) {
             updateMessage(assistantMessageUuid, { content: event.error });
             setLoading(false);
+          } else if (event.compacting) {
+            if (event.compacting.in_progress) {
+              appendMessage({
+                content: 'Compacting session ... ',
+                role: 'system',
+                localId: compactingUuid,
+              });
+            } else {
+              updateMessage(compactingUuid, {
+                replaceContent: event.compacting.message.display_content,
+                tokens: event.compacting.message.tokens,
+              });
+            }
           }
         }
       }

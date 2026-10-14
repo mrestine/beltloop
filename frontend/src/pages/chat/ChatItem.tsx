@@ -12,10 +12,12 @@ function UserContent({ message }: ChatItemProps) {
 }
 
 function AssistantContent({ message }: ChatItemProps) {
+  const content = message.display_content || message.content;
+
   return (
     <>
-      {message.content ? (
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+      {content ? (
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
       ) : (
         <span className="loader-wrap">
           <span className="loader"></span>

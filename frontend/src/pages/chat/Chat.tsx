@@ -20,7 +20,7 @@ function Chat() {
     setMessages((prev) => [...prev, message]);
   }
 
-  function updateMessage(uuid: string, { id, content, tokens }: MessageUpdate) {
+  function updateMessage(uuid: string, { id, content, replaceContent, tokens }: MessageUpdate) {
     setMessages((prev) => {
       const idx = prev.findLastIndex((m) => m.localId === uuid);
       if (idx === -1) return prev;
@@ -30,6 +30,9 @@ function Chat() {
       }
       if (content) {
         next[idx] = { ...next[idx], content: next[idx].content + content };
+      }
+      if (replaceContent) {
+        next[idx] = { ...next[idx], content: replaceContent };
       }
       if (tokens) {
         next[idx] = { ...next[idx], tokens };
@@ -50,7 +53,7 @@ function Chat() {
   function handleScroll(ev: React.UIEvent<HTMLDivElement>) {
     const pane = ev.currentTarget;
     const distanceFromBottom = pane.scrollHeight - pane.scrollTop - pane.clientHeight;
-    wasAtBottomRef.current = distanceFromBottom < 4;
+    wasAtBottomRef.current = distanceFromBottom < 24;
   }
   useEffect(() => {
     const pane = messagesPaneRef.current;
@@ -62,7 +65,7 @@ function Chat() {
 
   const tokenUsage = useMemo(() => {
     if (!messages.length) return null;
-    const tokenIdx = messages.findLastIndex((m) => m.role === 'assistant' && m.tokens);
+    const tokenIdx = messages.findLastIndex((m) => m.role !== 'user' && m.tokens);
     return tokenIdx === -1 ? null : messages[tokenIdx].tokens;
   }, [messages]);
 

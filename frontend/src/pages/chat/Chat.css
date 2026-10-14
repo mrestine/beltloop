@@ -27,7 +27,7 @@
   align-self: flex-end;
 }
 
-.chat-item.assistant {
+.chat-item.assistant, .chat-item.system {
   align-self: flex-start;
 
   .loader-wrap {
