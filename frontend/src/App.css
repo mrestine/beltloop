@@ -4,11 +4,10 @@
   height: 100%;
 }
 
-.app-header {
-  flex-shrink: 0;
-}
-
 .app-content {
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
+  background-color: var(--denim);
+  padding: 20px 16px;
 }

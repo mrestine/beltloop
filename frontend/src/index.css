@@ -1,20 +1,22 @@
 :root {
+  /**** COLORS ****/
   /* denim — chrome: nav, page background */
   --denim: #2b4c6f;
   --denim-dark: #1a2e44;
   --denim-light: #e8edf2;
-
   /* leather — content surfaces: cards, chat bubbles, panels */
   --leather: #c9a876;
   --leather-dark: #3b2a1e;
-
   /* bronze/brass — accents, usable on either surface */
   --bronze: #b08d57;
   --brass: #d4a017;
-
   /* text */
   --text-on-denim: #ede4d3;
   --text-on-leather: var(--leather-dark);
+
+  /**** FONTS ****/
+  --font-display: 'Special Elite', serif;
+  --font-body: 'Roboto Slab', serif;
 }
 
 html,
@@ -22,4 +24,11 @@ body,
 #root {
   height: 100%;
   margin: 0;
+}
+
+div, span, a, p {
+  font-family: var(--font-body);
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
 }

@@ -1,0 +1,39 @@
+.app-header {
+  display: flex;
+  background: var(--denim-dark);
+  outline: 1px dashed var(--bronze);
+  outline-offset: 6px;
+  flex-shrink: 0;
+  z-index: 999;
+}
+
+.app-title {
+  background: var(--leather);
+  color: var(--text-on-leather);
+  display: inline-block;
+  padding: 16px 16px 10px;
+  margin: 4px;
+  outline: 2px dashed var(--text-on-leather);
+  outline-offset: -4px;
+  border-radius: 4px;
+  font-size: 24px;
+}
+
+.nav-items {
+  display: inline-flex;
+  margin-left: 24px;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  a {
+    color: var(--bronze);
+  }
+}
+
+.nav-item-end {
+  height: 6px;
+  width: 6px;
+  border-radius: 50%;
+  opacity: 0.5;
+  background-color: var(--brass);
+}

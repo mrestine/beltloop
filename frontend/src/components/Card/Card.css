@@ -1,0 +1,8 @@
+.card {
+  background: var(--denim-light);
+  color: var(--text-on-leather);
+  padding: 16px;
+  outline: 2px dashed var(--text-on-leather);
+  outline-offset: -4px;
+  border-radius: 12px;
+}
