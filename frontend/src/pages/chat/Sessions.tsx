@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useEffectOnce } from 'react-use';
-import { type Session } from '@reinstorm/types';
+import { type Session } from '@beltloop/types';
 
 interface SessionsProps {
   selectedSession: number | null;

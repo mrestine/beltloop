@@ -1,5 +1,5 @@
 import './Context.css';
-import { ContextFilenames } from '@reinstorm/types';
+import { ContextFilenames } from '@beltloop/types';
 import { useState } from 'react';
 import { useEffectOnce } from 'react-use';
 import ReactMarkdown from 'react-markdown';

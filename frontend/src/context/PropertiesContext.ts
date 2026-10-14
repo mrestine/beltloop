@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { PropertiesContextValue } from '@reinstorm/types';
+import type { PropertiesContextValue } from '@beltloop/types';
 
 export const PropertiesContext = createContext<PropertiesContextValue | undefined>(undefined);
 

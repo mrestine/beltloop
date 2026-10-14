@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@reinstorm': fileURLToPath(new URL('./src', import.meta.url)),
+      '@beltloop': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
 })

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import ModelSelect from '@reinstorm/components/ModelSelect';
-import { type Message, type MessageUpdate } from '@reinstorm/types';
+import ModelSelect from '@beltloop/components/ModelSelect';
+import { type Message, type MessageUpdate } from '@beltloop/types';
 
 interface ChatWindowProps {
   sessionId: number;

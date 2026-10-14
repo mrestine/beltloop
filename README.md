@@ -1,4 +1,4 @@
-## Reinstorm
+## Beltloop
 
 A custom harness for my local models running in an ollama container.
 
@@ -32,7 +32,7 @@ ssh -N -L 11434:localhost:11434 you@container-host-box
 Run the API server:
 ```
 cd backend
-uv run uvicorn reinstorm.app:app --reload --port 8000
+uv run uvicorn beltloop.app:app --reload --port 8000
 ```
 
 Testing the endpoint:

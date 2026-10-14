@@ -1,5 +1,5 @@
 [project]
-name = "reinstorm"
+name = "beltloop"
 version = "0.1.0"
 description = "A simple harness for me"
 authors = [
@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.scripts]
-reinstorm = "reinstorm:main"
+beltloop = "beltloop:main"
 
 [build-system]
 requires = ["uv_build>=0.12.23,<0.13.0"]

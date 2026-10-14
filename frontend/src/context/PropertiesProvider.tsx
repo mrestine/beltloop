@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useEffectOnce } from 'react-use';
 import { PropertiesContext } from './PropertiesContext';
-import { type OllamaModelInfo, type Properties } from '@reinstorm/types';
+import { type OllamaModelInfo, type Properties } from '@beltloop/types';
 
 export function PropertiesProvider({ children }: { children: React.ReactNode }) {
   const [properties, setProperties] = useState<Properties | undefined>(undefined);

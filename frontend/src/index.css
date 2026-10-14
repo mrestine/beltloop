@@ -1,3 +1,22 @@
+:root {
+  /* denim — chrome: nav, page background */
+  --denim: #2b4c6f;
+  --denim-dark: #1a2e44;
+  --denim-light: #e8edf2;
+
+  /* leather — content surfaces: cards, chat bubbles, panels */
+  --leather: #c9a876;
+  --leather-dark: #3b2a1e;
+
+  /* bronze/brass — accents, usable on either surface */
+  --bronze: #b08d57;
+  --brass: #d4a017;
+
+  /* text */
+  --text-on-denim: #ede4d3;
+  --text-on-leather: var(--leather-dark);
+}
+
 html,
 body,
 #root {

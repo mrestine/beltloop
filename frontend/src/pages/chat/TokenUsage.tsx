@@ -1,5 +1,5 @@
 import './Chat.css';
-import { useProperties } from '@reinstorm/context/PropertiesContext';
+import { useProperties } from '@beltloop/context/PropertiesContext';
 
 interface TokenUsageProps {
   used?: number | null;

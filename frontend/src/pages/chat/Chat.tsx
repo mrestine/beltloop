@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Sessions from './Sessions';
 import ChatInput from './ChatInput';
 import ChatItem from './ChatItem';
-import { type Message, type MessageUpdate } from '@reinstorm/types';
+import { type Message, type MessageUpdate } from '@beltloop/types';
 import TokenUsage from './TokenUsage';
 
 function Chat() {

@@ -1,7 +1,7 @@
 import './Chat.css';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { type Message } from '@reinstorm/types';
+import { type Message } from '@beltloop/types';
 
 interface ChatItemProps {
   message: Message;
