@@ -3,52 +3,20 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Sessions from './Sessions';
 import ChatInput from './ChatInput';
 import ChatItem from './ChatItem';
-import { type Message, type MessageUpdate } from '@beltloop/types';
 import TokenUsage from './TokenUsage';
+import useChatMessages from './useChatMessages';
 
 function Chat() {
   const [selectedSession, setSelectedSession] = useState<number | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
   const wasAtBottomRef = useRef(true);
   const messagesPaneRef = useRef<HTMLDivElement>(null);
+  const { loading, messages, fetchMessagesForSession, sendMessageAndHandleReply } =
+    useChatMessages();
 
   function handleSessionSelect(sessionId: number) {
     setSelectedSession(sessionId);
+    fetchMessagesForSession(sessionId);
   }
-
-  function appendMessage(message: Message) {
-    setMessages((prev) => [...prev, message]);
-  }
-
-  function updateMessage(uuid: string, { id, content, replaceContent, tokens }: MessageUpdate) {
-    setMessages((prev) => {
-      const idx = prev.findLastIndex((m) => m.localId === uuid);
-      if (idx === -1) return prev;
-      const next = [...prev];
-      if (id) {
-        next[idx] = { ...next[idx], id };
-      }
-      if (content) {
-        next[idx] = { ...next[idx], content: next[idx].content + content };
-      }
-      if (replaceContent) {
-        next[idx] = { ...next[idx], content: replaceContent };
-      }
-      if (tokens) {
-        next[idx] = { ...next[idx], tokens };
-      }
-      return next;
-    });
-  }
-
-  useEffect(() => {
-    const loadMessages = selectedSession
-      ? fetch(`http://localhost:8000/messages-for-session/${selectedSession}`).then((res) =>
-          res.json(),
-        )
-      : Promise.resolve([]);
-    loadMessages.then((data) => setMessages(data));
-  }, [selectedSession]);
 
   function handleScroll(ev: React.UIEvent<HTMLDivElement>) {
     const pane = ev.currentTarget;
@@ -80,8 +48,8 @@ function Chat() {
       {selectedSession ? (
         <ChatInput
           sessionId={selectedSession}
-          appendMessage={appendMessage}
-          updateMessage={updateMessage}
+          loading={loading}
+          sendMessageAndHandleReply={sendMessageAndHandleReply}
         />
       ) : (
         <div>select a session</div>
