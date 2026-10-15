@@ -15,7 +15,7 @@ function ModelSelect(props: ModelSelectProps) {
 
   return (
     <select disabled={loading} onChange={handleChange}>
-      <option value="">default</option>
+      <option value="">Default model</option>
       {options.map((m) => (
         <option value={m} key={m}>
           {m}

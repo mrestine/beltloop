@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useEffectOnce } from 'react-use';
 import { type Session } from '@beltloop/types';
+import IconButton from '@beltloop/components/IconButton';
+import { Plus, Save, Edit, Delete } from 'lucide-react';
 
 interface SessionsProps {
   selectedSession: number | null;
@@ -37,24 +39,28 @@ function SessionRow({
     <div>
       {!session && !isEditing ? (
         <>
-          <button onClick={() => setIsEditing(true)}>+</button>
+          <IconButton icon={Plus} label="create" onClick={() => setIsEditing(true)} />
         </>
       ) : isEditing ? (
         <>
           <input value={inputValue} onChange={(ev) => setInputValue(ev.target.value)} />
-          <button onClick={() => handleSave()}>save</button>
+          <IconButton icon={Save} onClick={() => handleSave()} label="save" />
           <button onClick={() => setIsEditing(false)}>back</button>
         </>
       ) : (
         <>
           <span
             onClick={() => handleSessionSelect(session!.id)}
-            style={{ color: isSelected ? 'darkred' : '' }}
+            className={`session ${isSelected ? 'selected' : ''}`}
           >
             {session!.title}
           </span>
-          <button onClick={() => setIsEditing(true)}>e</button>
-          <button onClick={() => handleSessionDelete(session!.id)}>x</button>
+          <IconButton icon={Edit} label="edit" onClick={() => setIsEditing(true)} />
+          <IconButton
+            icon={Delete}
+            label="delete"
+            onClick={() => handleSessionDelete(session!.id)}
+          />
         </>
       )}
     </div>
@@ -63,6 +69,7 @@ function SessionRow({
 
 function Sessions({ selectedSession, handleSessionSelect }: SessionsProps) {
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
   function fetchSessions() {
@@ -128,26 +135,35 @@ function Sessions({ selectedSession, handleSessionSelect }: SessionsProps) {
     fetchSessions();
   });
 
+  const selectedSessionName = sessions.find((s) => s.id === selectedSession)?.title;
+
   return loading ? (
     <div>sessions loading...</div>
   ) : (
     <>
-      {sessions.map((s) => (
-        <SessionRow
-          key={s.id}
-          session={s}
-          isSelected={s.id === selectedSession}
-          handleSessionDelete={handleSessionDelete}
-          handleSessionSave={handleSessionSave}
-          handleSessionSelect={handleSessionSelect}
-        />
-      ))}
-      <SessionRow
-        isSelected={false}
-        handleSessionDelete={handleSessionDelete}
-        handleSessionSave={handleSessionSave}
-        handleSessionSelect={handleSessionSelect}
-      />
+      <div className="session-select" onClick={() => setIsExpanded(!isExpanded)}>
+        {selectedSessionName}
+        {isExpanded ? (
+          <div className="session-dropdown">
+            {sessions.map((s) => (
+              <SessionRow
+                key={s.id}
+                session={s}
+                isSelected={s.id === selectedSession}
+                handleSessionDelete={handleSessionDelete}
+                handleSessionSave={handleSessionSave}
+                handleSessionSelect={handleSessionSelect}
+              />
+            ))}
+            <SessionRow
+              isSelected={false}
+              handleSessionDelete={handleSessionDelete}
+              handleSessionSave={handleSessionSave}
+              handleSessionSelect={handleSessionSelect}
+            />
+          </div>
+        ) : null}
+      </div>
     </>
   );
 }

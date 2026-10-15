@@ -24,6 +24,7 @@ body,
 #root {
   height: 100%;
   margin: 0;
+  color: var(--dark-leather);
 }
 
 div, span, a, p {
@@ -31,4 +32,22 @@ div, span, a, p {
 }
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
+}
+
+button {
+  color: var(--dark-leather);
+  background-color: var(--bronze);
+  border-radius: 12px;
+  color: var(--leather-dark);
+  padding: 4px;
+  height: 24px;
+  min-width: 24px;
+}
+select {
+  background-color: var(--denim-dark);
+  border: 2px solid var(--bronze);
+  border-radius: 8px;
+  padding: 4px;
+  color: var(--text-on-denim);
+  font-family: var(--font-body);
 }

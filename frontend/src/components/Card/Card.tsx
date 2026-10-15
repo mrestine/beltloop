@@ -2,10 +2,11 @@ import './Card.css';
 
 interface CardProps {
   children: React.ReactNode;
+  className?: string;
 }
 
-function Card({ children }: CardProps) {
-  return <div className="card">{children}</div>;
+function Card({ children, className }: CardProps) {
+  return <div className={`card ${className}`}>{children}</div>;
 }
 
 export default Card;

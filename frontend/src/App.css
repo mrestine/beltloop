@@ -9,5 +9,5 @@
   min-height: 0;
   overflow-y: auto;
   background-color: var(--denim);
-  padding: 20px 16px;
+  padding: 20px 16px 12px;
 }
