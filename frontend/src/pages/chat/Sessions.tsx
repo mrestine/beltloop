@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useEffectOnce } from 'react-use';
 import { type Session } from '@beltloop/types';
 import IconButton from '@beltloop/components/IconButton';
-import { Plus, Save, Edit, Delete } from 'lucide-react';
+import { Plus, Save, Edit, Delete, ChevronDown, ArrowLeft } from 'lucide-react';
 
 interface SessionsProps {
   selectedSession: number | null;
@@ -36,16 +36,28 @@ function SessionRow({
   }
 
   return (
-    <div>
+    <div className="session-row">
       {!session && !isEditing ? (
         <>
-          <IconButton icon={Plus} label="create" onClick={() => setIsEditing(true)} />
+          <IconButton
+            type="secondary"
+            icon={Plus}
+            label="create session"
+            onClick={() => setIsEditing(true)}
+          />
         </>
       ) : isEditing ? (
         <>
           <input value={inputValue} onChange={(ev) => setInputValue(ev.target.value)} />
-          <IconButton icon={Save} onClick={() => handleSave()} label="save" />
-          <button onClick={() => setIsEditing(false)}>back</button>
+          <span className="session-actions">
+            <IconButton type="secondary" icon={Save} onClick={() => handleSave()} label="save" />
+            <IconButton
+              type="secondary"
+              icon={ArrowLeft}
+              onClick={() => setIsEditing(false)}
+              label="back"
+            />
+          </span>
         </>
       ) : (
         <>
@@ -55,12 +67,20 @@ function SessionRow({
           >
             {session!.title}
           </span>
-          <IconButton icon={Edit} label="edit" onClick={() => setIsEditing(true)} />
-          <IconButton
-            icon={Delete}
-            label="delete"
-            onClick={() => handleSessionDelete(session!.id)}
-          />
+          <span className="session-actions">
+            <IconButton
+              type="secondary"
+              icon={Edit}
+              label="edit"
+              onClick={() => setIsEditing(true)}
+            />
+            <IconButton
+              type="secondary"
+              icon={Delete}
+              label="delete"
+              onClick={() => handleSessionDelete(session!.id)}
+            />
+          </span>
         </>
       )}
     </div>
@@ -83,6 +103,11 @@ function Sessions({ selectedSession, handleSessionSelect }: SessionsProps) {
         }
         setLoading(false);
       });
+  }
+
+  function _handleSessionSelect(sessionId: number) {
+    setIsExpanded(false);
+    handleSessionSelect(sessionId);
   }
 
   function handleSessionCreate(title: string) {
@@ -138,11 +163,15 @@ function Sessions({ selectedSession, handleSessionSelect }: SessionsProps) {
   const selectedSessionName = sessions.find((s) => s.id === selectedSession)?.title;
 
   return loading ? (
-    <div>sessions loading...</div>
+    <div className="session-select">sessions loading...</div>
   ) : (
     <>
-      <div className="session-select" onClick={() => setIsExpanded(!isExpanded)}>
-        {selectedSessionName}
+      <div className="session-select">
+        <span className="session-select-content" onClick={() => setIsExpanded(!isExpanded)}>
+          Session:&nbsp;
+          {selectedSessionName}
+          <ChevronDown className={`chevron ${isExpanded ? 'expanded' : ''}`} size={16} />
+        </span>
         {isExpanded ? (
           <div className="session-dropdown">
             {sessions.map((s) => (
@@ -152,14 +181,14 @@ function Sessions({ selectedSession, handleSessionSelect }: SessionsProps) {
                 isSelected={s.id === selectedSession}
                 handleSessionDelete={handleSessionDelete}
                 handleSessionSave={handleSessionSave}
-                handleSessionSelect={handleSessionSelect}
+                handleSessionSelect={_handleSessionSelect}
               />
             ))}
             <SessionRow
               isSelected={false}
               handleSessionDelete={handleSessionDelete}
               handleSessionSave={handleSessionSave}
-              handleSessionSelect={handleSessionSelect}
+              handleSessionSelect={_handleSessionSelect}
             />
           </div>
         ) : null}

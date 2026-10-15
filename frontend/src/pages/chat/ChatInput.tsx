@@ -1,5 +1,6 @@
 import './Chat.css';
 import { useState } from 'react';
+import { Send } from 'lucide-react';
 
 interface ChatInputProps {
   sessionId: number;
@@ -39,7 +40,7 @@ function ChatInput({ sessionId, model, loading, sendMessageAndHandleReply }: Cha
         onKeyDown={handleKeyDown}
       />
       <button className="send-button" onClick={sendMessage} disabled={sendDisabled}>
-        {'>'}
+        <Send size={20} />
       </button>
     </div>
   );

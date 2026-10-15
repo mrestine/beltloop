@@ -42,6 +42,15 @@ button {
   padding: 4px;
   height: 24px;
   min-width: 24px;
+  cursor: pointer;
+}
+button.secondary {
+  color: var(--bronze);
+  background: none;
+  border: none;
+  &:hover {
+    color: var(--brass);
+  }
 }
 select {
   background-color: var(--denim-dark);

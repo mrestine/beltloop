@@ -10,25 +10,50 @@
   padding: 4px 8px;
   border-radius: 8px;
   border: 2px solid var(--bronze);
+  cursor: pointer;
 }
 .session-select {
   position: relative;
   align-self: flex-start;
   margin-bottom: 8px;
 }
+.session-select-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  .chevron {
+    transition: transform 0.2s ease-in-out;
+    transform: rotate(0deg);
+    &.expanded {
+      transform: rotate(540deg);
+    }
+  }
+}
 .session-dropdown {
   position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
   top: calc(100% + 4px);
   left: -2px;
   width: max-content;
+  font-size: 14px;
 }
 .session {
   &:hover {
-    color: var(--bronze)
+    color: var(--bronze);
+    cursor: pointer;
   }
   &.selected {
     color: var(--brass)
   }
+}
+.session-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 32px;
 }
 
 .chat-card{
@@ -102,7 +127,7 @@
 
 @keyframes bounce {
   0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
-  30%            { transform: translateY(-4px); opacity: 1; }
+  30%           { transform: translateY(-4px); opacity: 1; }
 }
 
 .chat-input-wrap {
@@ -118,16 +143,28 @@
   width: 100%;
   background-color: var(--denim-light);
   border-radius: 16px;
+  font-family: inherit;
 }
 .send-button {
   position: absolute;
   right: 12px;
   height: 32px;
   width: 32px;
-  border-radius: 50%;
-  background: var(--brass);
-  color: var(--denim-dark);
+  background: none;
+  border: none;
+  color: var(--demin);
   top: calc(50% - 16px);
+  transition: all ease-in-out 0.2s;
+  opacity: 1;
+  &:disabled {
+    opacity: 0;
+  }
+  &:hover {
+    color: var(--bronze);
+    &:not:disabled {
+      cursor: pointer;
+    }
+  }
 }
 
 .models-usage-row {
@@ -138,7 +175,6 @@
 }
 .usage-wrap {
   height: 20px;
-  display: inline-block;
   width: 50%;
   position: relative;
   border: 2px solid var(--bronze);
@@ -149,6 +185,7 @@
     width: 100%;
     display: flex;
     position: relative;
+    align-items: center;
     justify-content: space-between;
   }
   .usage-bar {
@@ -158,5 +195,20 @@
     height: 100%;
     background: var(--denim-dark);
     border-radius: 6px;
+  }
+  .spinning {
+    animation: spin 1.2s linear infinite;
+    &.paused {
+      animation-play-state: paused;
+    }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }

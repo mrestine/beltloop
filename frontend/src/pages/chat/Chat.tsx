@@ -67,7 +67,7 @@ function Chat() {
       )}
       <div className="models-usage-row">
         <ModelSelect onChange={handleModelChange} />
-        <TokenUsage used={tokenUsage} />
+        <TokenUsage used={tokenUsage} loading={loading} />
       </div>
     </div>
   );
