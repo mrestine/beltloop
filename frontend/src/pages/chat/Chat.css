@@ -1,7 +1,8 @@
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
 .session-dropdown, .session-select {
@@ -141,6 +142,7 @@
   padding: 12px 54px 12px 12px;
   box-sizing: border-box;
   width: 100%;
+  background: var(--denim-light);
   background-color: var(--denim-light);
   border-radius: 16px;
   font-family: inherit;

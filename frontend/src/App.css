@@ -9,5 +9,16 @@
   min-height: 0;
   overflow-y: auto;
   background-color: var(--denim);
-  padding: 20px 16px 12px;
+  padding: 0 16px 12px;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  .hem-wrap {
+    flex-shrink: 0;
+    height: 6px;
+    outline: 1px dashed var(--bronze);
+    margin-left: -16px;
+    margin-bottom: 14px;
+    width: calc(100% + 32px);
+  }
 }

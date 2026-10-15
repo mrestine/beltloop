@@ -1,10 +1,8 @@
 .app-header {
   display: flex;
   background: var(--denim-dark);
-  outline: 1px dashed var(--bronze);
-  outline-offset: 6px;
   flex-shrink: 0;
-  z-index: 999;
+  z-index: 10;
 }
 
 .app-title {
@@ -25,8 +23,20 @@
   gap: 8px;
   align-items: center;
   justify-content: center;
-  a {
-    color: var(--bronze);
+}
+.nav-item {
+  background-color: var(--denim-dark);
+  color: var(--bronze);
+  &:hover {
+    color: var(--brass);
+  }
+  &.active {
+    text-decoration: none;
+    color: var(--text-on-denim);
+    &:hover {
+      cursor: default;
+      color: var(--text-on-denim);
+    }
   }
 }
 
@@ -34,6 +44,7 @@
   height: 6px;
   width: 6px;
   border-radius: 50%;
+  margin-top: 2px;
   opacity: 0.5;
   background-color: var(--brass);
 }

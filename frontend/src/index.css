@@ -64,3 +64,6 @@ select {
   color: var(--text-on-denim);
   font-family: var(--font-body);
 }
+*:focus {
+  outline-color: var(--brass);
+}

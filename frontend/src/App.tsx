@@ -12,6 +12,7 @@ function App() {
       <div className="app-layout">
         <NavBar />
         <div className="app-content">
+          <div className="hem-wrap" />
           <PropertiesProvider>
             <Routes>
               <Route path="/" element={<Home />} />

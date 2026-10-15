@@ -168,8 +168,7 @@ function Sessions({ selectedSession, handleSessionSelect }: SessionsProps) {
     <>
       <div className="session-select">
         <span className="session-select-content" onClick={() => setIsExpanded(!isExpanded)}>
-          Session:&nbsp;
-          {selectedSessionName}
+          Session: {selectedSessionName}
           <ChevronDown className={`chevron ${isExpanded ? 'expanded' : ''}`} size={16} />
         </span>
         {isExpanded ? (
