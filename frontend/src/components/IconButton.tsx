@@ -4,13 +4,22 @@ interface ButtonProps {
   type?: 'primary' | 'secondary';
   icon: LucideIcon;
   label: string;
+  size?: number;
+  disabled?: boolean;
   onClick: () => void;
 }
 
-const IconButton = ({ icon: Icon, label, onClick, type = 'primary' }: ButtonProps) => {
+const IconButton = ({
+  icon: Icon,
+  label,
+  onClick,
+  type = 'primary',
+  size = 16,
+  disabled = false,
+}: ButtonProps) => {
   return (
-    <button className={type} aria-label={label} onClick={onClick}>
-      <Icon size={16} />
+    <button disabled={disabled} className={type} aria-label={label} onClick={onClick}>
+      <Icon size={size} />
     </button>
   );
 };

@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { useEffectOnce } from 'react-use';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import Card from '@beltloop/components/Card/Card';
+import { Edit, Eye, Save } from 'lucide-react';
+import IconButton from '@beltloop/components/IconButton';
 
 type ContextFilename = (typeof ContextFilenames)[keyof typeof ContextFilenames];
 interface FileContents {
@@ -60,16 +63,16 @@ function Context() {
   }
 
   return (
-    <div className="context-container">
+    <Card className="context-container">
       <div className="tab-header-wrap">
         {ContextFilenamesArray.map((file) => (
-          <span
+          <h4
             className={`tab-header ${tab === file ? 'active' : ''}`}
             key={file}
             onClick={() => handleTabChange(file)}
           >
             {file}
-          </span>
+          </h4>
         ))}
       </div>
       {loading ? (
@@ -77,17 +80,32 @@ function Context() {
       ) : (
         <>
           {isPreview ? (
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{inputValue}</ReactMarkdown>
+            <div className="context-preview">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{inputValue}</ReactMarkdown>
+            </div>
           ) : (
             <textarea value={inputValue} onChange={handleInputChange} />
           )}
-          <button onClick={() => setIsPreview(!isPreview)}>{isPreview ? 'edit' : 'preview'}</button>
-          <button onClick={saveFile} disabled={loading || saving}>
-            save
-          </button>
+          <div className="context-actions">
+            <IconButton
+              type="secondary"
+              size={24}
+              icon={isPreview ? Edit : Eye}
+              onClick={() => setIsPreview(!isPreview)}
+              label={isPreview ? 'edit' : 'preview'}
+            />
+            <IconButton
+              type="secondary"
+              size={24}
+              icon={Save}
+              onClick={saveFile}
+              disabled={loading || saving}
+              label="save"
+            />
+          </div>
         </>
       )}
-    </div>
+    </Card>
   );
 }
 

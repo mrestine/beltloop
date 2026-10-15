@@ -27,6 +27,10 @@ body,
   color: var(--dark-leather);
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 div, span, a, p {
   font-family: var(--font-body);
 }
