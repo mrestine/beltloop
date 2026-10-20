@@ -20,6 +20,10 @@ const navItems: NavItem[] = [
     route: '/context',
     label: 'Context',
   },
+  {
+    route: 'tools',
+    label: 'Tools',
+  },
 ];
 
 function NavBar() {

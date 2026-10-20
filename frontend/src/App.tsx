@@ -5,6 +5,7 @@ import Home from './pages/home/Home';
 import { PropertiesProvider } from './context/PropertiesProvider';
 import Context from './pages/context/Context';
 import NavBar from './components/NavBar/NavBar';
+import Tools from './pages/tools/Tools';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/chat" element={<Chat />} />
               <Route path="/context" element={<Context />} />
+              <Route path="/tools" element={<Tools />} />
             </Routes>
           </PropertiesProvider>
         </div>

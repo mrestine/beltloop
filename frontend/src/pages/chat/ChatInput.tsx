@@ -26,6 +26,7 @@ function ChatInput({ sessionId, model, loading, sendMessageAndHandleReply }: Cha
 
   function handleKeyDown(ev: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (ev.key === 'Enter' && !sendDisabled) {
+      ev.preventDefault();
       sendMessage();
     }
   }

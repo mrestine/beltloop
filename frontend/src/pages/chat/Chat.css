@@ -126,6 +126,18 @@
   }
 }
 
+.chat-item.tool {
+  align-self: center;
+  border: none;
+  font-size: 12px;
+  background: none;
+  cursor: pointer;
+  pre {
+    margin: 4px 0;
+    text-wrap: auto;
+  }
+}
+
 @keyframes bounce {
   0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
   30%           { transform: translateY(-4px); opacity: 1; }
