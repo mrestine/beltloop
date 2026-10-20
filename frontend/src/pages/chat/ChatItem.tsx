@@ -36,13 +36,12 @@ function AssistantContent({ message }: StringChatItemProps) {
   );
 }
 
-// TODO: make this look goooood
 function ToolContent({ message }: ToolChatItemProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   return (
     <div onClick={() => setIsExpanded(!isExpanded)}>
       <>
-        {message.content.name} {message.content.result ? 'done' : 'running'}
+        {message.content.name} - {message.content.result ? 'done' : 'running'}
       </>
       {isExpanded && (
         <>

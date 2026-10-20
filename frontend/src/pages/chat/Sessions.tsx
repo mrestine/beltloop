@@ -151,6 +151,7 @@ function Sessions({ selectedSession, handleSessionSelect }: SessionsProps) {
   }
 
   function handleSessionDelete(sessionId: number) {
+    // TODO: if deleting the current session, change sessions
     fetch(`http://localhost:8000/sessions/${sessionId}`, {
       method: 'delete',
     }).then(fetchSessions);
