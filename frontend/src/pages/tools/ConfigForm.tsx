@@ -2,7 +2,7 @@ import './Tools.css';
 import IconButton from '@beltloop/components/IconButton';
 import type { ToolConfig, ToolConfigFormValues } from '@beltloop/types';
 import { Save } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 interface ConfigFormProps {
   toolConfig: ToolConfig;
@@ -45,26 +45,43 @@ function ConfigForm({ toolConfig }: ConfigFormProps) {
 
   const fieldConfigs = toolConfig.config.properties;
   const fieldNames = Object.keys(fieldConfigs);
-  const fields = fieldNames.map((name) => {
-    const fieldProperties = fieldConfigs[name];
-    if (fieldProperties.enum?.length) {
-      return (
-        <div key="name" className="field-wrap">
-          <select
-            name={name}
-            value={formValues.config[name] as string}
-            onChange={(ev) => handleFieldChange(name, ev.target.value)}
-          >
-            {fieldProperties.enum.map((e: string) => (
-              <option key={e} value={e}>
-                {e}
-              </option>
-            ))}
-          </select>
-        </div>
-      );
-    }
-  });
+  const fields = useMemo(
+    () =>
+      fieldNames.map((name) => {
+        const fieldProperties = fieldConfigs[name];
+        if (fieldProperties.enum?.length) {
+          return (
+            <div key={name} className="field-wrap">
+              <label>{name}</label>
+              <select
+                name={name}
+                value={formValues.config[name] as string}
+                onChange={(ev) => handleFieldChange(name, ev.target.value)}
+              >
+                {fieldProperties.enum.map((e: string) => (
+                  <option key={e} value={e}>
+                    {e}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        } else {
+          return (
+            <div key={name} className="field-wrap">
+              <label>{name}</label>
+              <input
+                name={name}
+                value={formValues.config[name] as string}
+                type={fieldProperties.type === 'number' ? 'number' : 'text'}
+                onChange={(ev) => handleFieldChange(name, ev.target.value)}
+              />
+            </div>
+          );
+        }
+      }),
+    [fieldConfigs, formValues.config, fieldNames],
+  );
 
   return (
     <div className="tool-form-wrap">
