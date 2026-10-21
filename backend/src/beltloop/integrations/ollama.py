@@ -4,7 +4,7 @@ from typing import TypedDict
 
 from ollama import Client
 
-from .tools import execute_tool, get_tool_schemas
+from .tools import execute_tool
 
 OLLAMA_HOST = "http://localhost:11434"
 DEFAULT_MODEL = "qwen2.5:7b-instruct"
@@ -23,19 +23,14 @@ async def get_ollama_models():
     return client.list()
 
 
-def get_tools():
-    # TODO: enabled/disabled logic here
-    return get_tool_schemas()
-
-
-async def stream_chat_completion(history: list[ChatItem], model: str):
+async def stream_chat_completion(history: list[ChatItem], model: str, tools, db):
     try:
         response = client.chat(
             **chatArgs,
             stream=True,
             model=model or DEFAULT_MODEL,
             messages=history,
-            tools=get_tools(),
+            tools=tools,
         )
         for chunk in response:
             if chunk.message.content:
@@ -59,7 +54,8 @@ async def stream_chat_completion(history: list[ChatItem], model: str):
 
                 # run the tools in parallel, sending results for each as they're ready
                 tasks = [
-                    asyncio.create_task(run_tool(tool_call=tc)) for tc in chunk.message.tool_calls
+                    asyncio.create_task(run_tool(tool_call=tc, db=db))
+                    for tc in chunk.message.tool_calls
                 ]
                 for task in asyncio.as_completed(tasks):
                     tool_call, result = await task
@@ -91,28 +87,14 @@ async def stream_chat_completion(history: list[ChatItem], model: str):
         yield json.dumps({"error": str(e)}) + "\n"
 
 
-async def run_tool(tool_call):
+async def run_tool(tool_call, db):
     result = await execute_tool(
-        name=tool_call.function.name, arguments=tool_call.function.arguments
+        name=tool_call.function.name, arguments=tool_call.function.arguments, db=db
     )
     return tool_call, result
 
 
-def chat_sync(history: list[ChatItem], model: str, include_tools: bool = True):
-    kwargs = {"tools": get_tools() if include_tools else {}}
+def chat_sync(history: list[ChatItem], model: str, tools: dict | None = None):
     return client.chat(
-        **chatArgs,
-        stream=False,
-        model=model or DEFAULT_MODEL,
-        messages=history,
-        **kwargs,
+        **chatArgs, stream=False, model=model or DEFAULT_MODEL, messages=history, tools=tools
     )
-
-
-async def test_tool_call(history: list[ChatItem]):
-    response = client.chat(
-        model="qwen2.5:7b-instruct",
-        messages=[{"role": "user", "content": "what time is it right now?"}, *history],
-        tools=get_tools(),
-    )
-    return response

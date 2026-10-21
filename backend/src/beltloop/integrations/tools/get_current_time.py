@@ -1,5 +1,5 @@
-from datetime import UTC, datetime
-from zoneinfo import available_timezones
+from datetime import datetime
+from zoneinfo import ZoneInfo, available_timezones
 
 CONFIG_SCHEMA = {
     "type": "object",
@@ -22,5 +22,6 @@ SCHEMA = {
 }
 
 
-async def handler(**kwargs):
-    return datetime.now(UTC).isoformat()
+async def handler(config: dict):
+    timezone = ZoneInfo(config.get("timezone", "UTC"))
+    return datetime.now(timezone).isoformat()

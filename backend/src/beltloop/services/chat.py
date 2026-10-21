@@ -3,7 +3,8 @@ import json
 from sqlmodel import select
 
 from ..integrations.ollama import MAX_CONTEXT, chat_sync, stream_chat_completion
-from ..models import Message
+from ..integrations.tools import get_tool_schemas
+from ..models import Message, ToolConfig
 from .context import read_all_files
 
 
@@ -23,15 +24,22 @@ async def handle_chat_turn(db, payload):
     messages = (await db.exec(statement)).all()
     history = [{"role": m.role, "content": __stringify_content(m.content)} for m in messages]
 
+    # fetch tool configs to pass enabled tools to ollama
+    tool_schemas = get_tool_schemas()
+    configStatement = select(ToolConfig).where(ToolConfig.enabled == True)
+    enabled_tool_configs = (await db.exec(configStatement)).all()
+    enabled_tool_names = {tc.name for tc in enabled_tool_configs}
+    tools = [s for s in tool_schemas if s["function"]["name"] in enabled_tool_names]
+
     async for line in stream_and_persist_reply(
-        db, payload.session_id, history, payload.model, message.id
+        db, payload.session_id, history, payload.model, message.id, tools
     ):
         yield line
 
 
 # this is one turn
 async def stream_and_persist_reply(
-    db, session_id: int, history: list[dict], model: str, user_message_id: str
+    db, session_id: int, history: list[dict], model: str, user_message_id: str, tools
 ):
     yield json.dumps({"user_message_id": user_message_id}) + "\n"
     context_files = read_all_files()
@@ -41,7 +49,7 @@ async def stream_and_persist_reply(
         history_with_context = [{"role": "system", "content": context_content}, *history]
 
     async for line in tool_loop_iteration(
-        db, session_id, history_with_context, model, iterations_left=5
+        db, session_id, history_with_context, model, tools, iterations_left=5
     ):
         yield line
 
@@ -52,7 +60,7 @@ async def stream_and_persist_reply(
 # 3. repeats of the above if the model calls tools in sequence
 # 4. the final assistant message
 # if the model calls tools in parallel, those results are all in (3)
-async def tool_loop_iteration(db, session_id, history_with_context, model, iterations_left):
+async def tool_loop_iteration(db, session_id, history_with_context, model, tools, iterations_left):
     if iterations_left == 0:
         yield json.dumps({"error": "maximum tool calls exceeded"}) + "\n"
         return
@@ -62,7 +70,7 @@ async def tool_loop_iteration(db, session_id, history_with_context, model, itera
     tool_results = []
 
     # the streamed response from ollama.py. includes the tool responses
-    async for line in stream_chat_completion(history_with_context, model):
+    async for line in stream_chat_completion(history_with_context, model, tools, db):
         event = json.loads(line)
         # normal message text
         if "data" in event:
@@ -144,7 +152,7 @@ async def tool_loop_iteration(db, session_id, history_with_context, model, itera
             *(__message_entity_to_chat_item(tool_message) for tool_message in tool_results),
         ]
         async for line in tool_loop_iteration(
-            db, session_id, next_history, model, iterations_left - 1
+            db, session_id, next_history, model, tools, iterations_left - 1
         ):
             yield line
         return
@@ -203,7 +211,7 @@ async def compact_chat_messages(db, session_id: int, model: str, usage: int):
             f"Transcript:\n{formatted_history}"
         ),
     }
-    response = chat_sync(history=[compact_prompt], model=model, include_tools=False)
+    response = chat_sync(history=[compact_prompt], model=model, tools=None)
 
     compacted_message = await __save_message(
         db=db,
