@@ -1,11 +1,12 @@
 from sqlmodel import select
 
 from ...models import ToolConfig
-from . import get_current_time, get_weather
+from . import get_current_time, get_weather, memory
 
 TOOLS = {
     "get_current_time": get_current_time,
     "get_weather": get_weather,
+    "memory": memory,
 }
 
 
@@ -28,4 +29,4 @@ async def execute_tool(name: str, arguments: dict, db):
     config = tool_config.config if tool_config else {}
     if tool is None:
         raise ValueError(f"Unknown tool: {name}")
-    return await tool.handler(config={**config, **arguments})
+    return await tool.handler(config={**config, **arguments}, db=db)

@@ -22,6 +22,6 @@ SCHEMA = {
 }
 
 
-async def handler(config: dict):
+async def handler(config: dict, db):
     timezone = ZoneInfo(config.get("timezone", "UTC"))
     return datetime.now(timezone).isoformat()

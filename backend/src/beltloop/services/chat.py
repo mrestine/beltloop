@@ -4,7 +4,7 @@ from sqlmodel import select
 
 from ..integrations.ollama import MAX_CONTEXT, chat_sync, stream_chat_completion
 from ..integrations.tools import get_tool_schemas
-from ..models import Message, ToolConfig
+from ..models import Memory, Message, ToolConfig
 from .context import read_all_files
 
 
@@ -30,23 +30,35 @@ async def handle_chat_turn(db, payload):
     enabled_tool_configs = (await db.exec(configStatement)).all()
     enabled_tool_names = {tc.name for tc in enabled_tool_configs}
     tools = [s for s in tool_schemas if s["function"]["name"] in enabled_tool_names]
+    use_memory = "memory" in enabled_tool_names
 
     async for line in stream_and_persist_reply(
-        db, payload.session_id, history, payload.model, message.id, tools
+        db, payload.session_id, history, payload.model, message.id, tools, use_memory
     ):
         yield line
 
 
 # this is one turn
 async def stream_and_persist_reply(
-    db, session_id: int, history: list[dict], model: str, user_message_id: str, tools
+    db, session_id: int, history: list[dict], model: str, user_message_id: str, tools, use_memory
 ):
     yield json.dumps({"user_message_id": user_message_id}) + "\n"
     context_files = read_all_files()
     context_content = "\n\n".join(content for content in context_files.values() if content.strip())
     history_with_context = history
+
+    if use_memory:
+        memories = (await db.exec(select(Memory))).all()
+        memory_message = {
+            "role": "system",
+            "content": f"memory keys: {', '.join(m.key for m in memories)}",
+        }
+        history_with_context = [memory_message, *history_with_context]
     if context_content:
-        history_with_context = [{"role": "system", "content": context_content}, *history]
+        history_with_context = [
+            {"role": "system", "content": context_content},
+            *history_with_context,
+        ]
 
     async for line in tool_loop_iteration(
         db, session_id, history_with_context, model, tools, iterations_left=5

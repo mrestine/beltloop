@@ -130,11 +130,11 @@ function useChatMessages() {
               tokens: event.tokens,
               id: event.assistant_message_id,
             });
-            // id can only mean the assistant message is complete. a tool call might follow
-            // set a new uuid so the next assistant data makes a new assistant message
-            if (event.assistant_message_id) {
-              assistantMessageUuid = crypto.randomUUID();
-            }
+          }
+          // id can only mean the assistant message is complete. a tool call might follow
+          // set a new uuid so the next assistant data makes a new assistant message
+          if (event.assistant_message_id && !event.done) {
+            assistantMessageUuid = crypto.randomUUID();
           }
           // the start of the tool call message, no results yet
           if (event.tool_call) {

@@ -2,15 +2,16 @@
 
 A custom harness for my local models running in an ollama container.
 
-This is still very much under construction. Right now, it's just
-* A FastAPI Python server with endpoints to get models and post a message with a response stream, managed sessions, compaction, tools, and context files
+This is still very much under construction. Right now, it includes
+* A FastAPI Python server with endpoints to get models and post a message with a response stream, managed sessions, compaction, tools, memory, and context files
 * A React frontend built with Vite that can select a model, send, receive messages in a session, and update context files persona.md and user.md.
 
 Coming up:
-* agent-editable memory.md
 * more tools / integrations
 * cron jobs
 * containerization
+
+A note on how memory works: it does not use an .md file. Instead, it uses the database. It's instructed to create readable keys for each memory. all the memory keys are prepended to the chat history along with the context files. This keeps smaller models from potentially making a mess of the file. It also means I add to the context as minimally as possible, which is more beneficial for smaller windows. The model can decide to recall based on a key that it chose. 
 
 I could very easily use AI to vibe my way through this, but I myself want the experience of interfacing more deeply with AI and building with Python. 
 

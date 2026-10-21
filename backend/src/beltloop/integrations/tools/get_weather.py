@@ -42,7 +42,7 @@ URL = "https://api.open-meteo.com/v1/forecast"
 GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search"
 
 
-async def handler(config: dict):
+async def handler(config: dict, db):
     params = {
         "latitude": config.get("latitude"),
         "longitude": config.get("longitude"),
