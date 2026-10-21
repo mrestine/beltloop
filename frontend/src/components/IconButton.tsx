@@ -7,6 +7,7 @@ interface ButtonProps {
   size?: number;
   disabled?: boolean;
   onClick: () => void;
+  className?: string;
 }
 
 const IconButton = ({
@@ -16,9 +17,15 @@ const IconButton = ({
   type = 'primary',
   size = 16,
   disabled = false,
+  className = '',
 }: ButtonProps) => {
   return (
-    <button disabled={disabled} className={type} aria-label={label} onClick={onClick}>
+    <button
+      disabled={disabled}
+      className={type + ' ' + className}
+      aria-label={label}
+      onClick={onClick}
+    >
       <Icon size={size} />
     </button>
   );

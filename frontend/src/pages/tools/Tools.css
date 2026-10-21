@@ -1,0 +1,27 @@
+.tools-list {
+  display: flex;
+  flex-direction: column;
+}
+.tools-item {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  .tool-description {
+    font-size: 12px;
+  }
+}
+
+.tool-form-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.save-btn {
+  height: auto;
+  padding: 4px 8px;
+  width: auto;
+  align-self: flex-end;
+  &:hover {
+    background-color: var(--brass);
+  }
+}

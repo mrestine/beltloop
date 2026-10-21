@@ -3,3 +3,4 @@ export * from './messages';
 export * from './models';
 export * from './properties';
 export * from './sessions';
+export * from './toolConfigs';
