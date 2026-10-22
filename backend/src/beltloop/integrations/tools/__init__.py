@@ -1,11 +1,12 @@
 from sqlmodel import select
 
 from ...models import ToolConfig
-from . import get_current_time, get_weather, memory
+from . import get_current_time, get_weather, google_calendar, memory
 
 TOOLS = {
     "get_current_time": get_current_time,
     "get_weather": get_weather,
+    "google_calendar": google_calendar,
     "memory": memory,
 }
 
