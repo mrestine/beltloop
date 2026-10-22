@@ -14,12 +14,11 @@ function Home() {
         using this frontend tech for many years, but this is my first foray into Python.
       </p>
       <p>
-        Currently, it can manage chat sessions, provide context files, and compact threads as
-        needed.
+        Currently, it can manage chat sessions, provide context files, tools access, memory
+        capabilities, and compact threads as needed.
       </p>
       <p>
-        Soon, it will have tool access, memory capabilities, containerization, other integrations,
-        and cron jobs.
+        Soon, it will have more tool access, containerization, other integrations, and cron jobs.
       </p>
     </Card>
   );
