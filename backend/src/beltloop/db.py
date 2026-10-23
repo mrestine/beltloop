@@ -1,8 +1,14 @@
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 engine = create_async_engine("sqlite+aiosqlite:///beltloop.db")
+
+
+@event.listens_for(engine.sync_engine, "connect")
+def _enable_fk(dbapi_connection, _):
+    dbapi_connection.execute("PRAGMA foreign_keys=ON")
 
 
 async def get_session():

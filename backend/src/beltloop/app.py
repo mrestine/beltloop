@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .db import init_db
-from .routers import context, messages, platform, sessions, tools
+from .routers import context, cron_jobs, messages, platform, sessions, tools
 from .services.context import init_context_files
 
 
@@ -25,6 +25,7 @@ app.add_middleware(
 )
 
 app.include_router(context.router)
+app.include_router(cron_jobs.router)
 app.include_router(messages.router)
 app.include_router(platform.router)
 app.include_router(sessions.router)

@@ -4,7 +4,6 @@ from pydantic import BaseModel
 from sqlmodel import select
 
 from ..db import AsyncSession, get_session
-from ..integrations.ollama import DEFAULT_MODEL
 from ..models import Message, Session
 from ..services.chat import handle_chat_turn
 
@@ -30,10 +29,7 @@ async def chat(payload: MessageCreate, db: AsyncSession = Depends(get_session)):
     if session is None:
         raise HTTPException(status_code=404, detail="session not found")
 
-    if session.model != payload.model:
-        session.model = payload.model or DEFAULT_MODEL
-
     return StreamingResponse(
-        handle_chat_turn(db, payload),
+        handle_chat_turn(db, payload, session, True),
         media_type="application/x-ndjson",
     )

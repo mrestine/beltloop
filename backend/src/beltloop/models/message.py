@@ -14,7 +14,7 @@ class Role(StrEnum):
 
 class Message(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    session_id: int = Field(foreign_key="session.id")
+    session_id: int = Field(foreign_key="session.id", ondelete="CASCADE")
     role: Role
     content: str | dict = Field(default="", sa_column=Column(JSON))
     display_content: str | None = None

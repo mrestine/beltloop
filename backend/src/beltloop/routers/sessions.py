@@ -4,7 +4,7 @@ from sqlmodel import select
 
 from ..db import AsyncSession, get_session
 from ..integrations.ollama import DEFAULT_MODEL
-from ..models import Message, Session
+from ..models import Session
 
 router = APIRouter(prefix="/sessions")
 
@@ -48,10 +48,5 @@ async def delete_session(id: int, db: AsyncSession = Depends(get_session)):
     session = await db.get(Session, id)
     if session is None:
         raise HTTPException(status_code=404, detail="session not found")
-
-    messages_statement = select(Message).where(Message.session_id == id)
-    messages = (await db.exec(messages_statement)).all()
-    for m in messages:
-        await db.delete(m)
     await db.delete(session)
     await db.commit()

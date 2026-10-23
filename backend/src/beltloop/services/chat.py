@@ -1,30 +1,57 @@
+import asyncio
 import json
 
 from sqlmodel import select
 
-from ..integrations.ollama import MAX_CONTEXT, chat_sync, stream_chat_completion
-from ..integrations.tools import get_tool_schemas
+from ..integrations.ollama import DEFAULT_MODEL, MAX_CONTEXT, get_ollama_response
+from ..integrations.tools import execute_tool, get_tool_schemas
 from ..models import Memory, Message, ToolConfig
 from .context import read_all_files
 
 
-async def handle_chat_turn(db, payload):
-    usage = await get_token_usage(db, payload.session_id)
+async def handle_chat_turn(db, payload, session, stream_response):
+    model = session.model
+    if session.model != payload.model:
+        session.model = model = payload.model or DEFAULT_MODEL
+
+    usage = await __get_token_usage(db, session.id)
     if usage > MAX_CONTEXT:
-        async for line in compact_chat_messages(db, payload.session_id, payload.model, usage):
+        async for line in __compact_chat_messages(db, session.id, model, usage):
             yield line
 
     message = await __save_message(db=db, **payload.model_dump(exclude={"model"}), role="user")
+    yield json.dumps({"user_message_id": message.id}) + "\n"
 
+    history_with_context, tools = await __gather_context(db, session_id=session.id)
+
+    async for line in __tool_loop_iteration(
+        db,
+        session_id=session.id,
+        history_with_context=history_with_context,
+        model=model,
+        tools=tools,
+        stream_response=stream_response,
+        iterations_left=5,
+    ):
+        yield line
+
+
+# puts together everything that gets prepended to the user's message
+# - context files
+# - memory keys (if memory tool enabled)
+# - chat history (non-compacted messages only)
+# - available tools
+async def __gather_context(db, session_id: int):
+    # history
     statement = (
         select(Message)
-        .where(Message.session_id == payload.session_id, Message.is_compacted == False)
+        .where(Message.session_id == session_id, Message.is_compacted == False)
         .order_by(Message.created_at)
     )
     messages = (await db.exec(statement)).all()
     history = [{"role": m.role, "content": __stringify_content(m.content)} for m in messages]
 
-    # fetch tool configs to pass enabled tools to ollama
+    # tools
     tool_schemas = get_tool_schemas()
     configStatement = select(ToolConfig).where(ToolConfig.enabled == True)
     enabled_tool_configs = (await db.exec(configStatement)).all()
@@ -32,17 +59,7 @@ async def handle_chat_turn(db, payload):
     tools = [s for s in tool_schemas if s["function"]["name"] in enabled_tool_names]
     use_memory = "memory" in enabled_tool_names
 
-    async for line in stream_and_persist_reply(
-        db, payload.session_id, history, payload.model, message.id, tools, use_memory
-    ):
-        yield line
-
-
-# this is one turn
-async def stream_and_persist_reply(
-    db, session_id: int, history: list[dict], model: str, user_message_id: str, tools, use_memory
-):
-    yield json.dumps({"user_message_id": user_message_id}) + "\n"
+    # context files (persona.md, user.md)
     context_files = read_all_files()
     context_content = "\n\n".join(content for content in context_files.values() if content.strip())
     history_with_context = history
@@ -60,10 +77,7 @@ async def stream_and_persist_reply(
             *history_with_context,
         ]
 
-    async for line in tool_loop_iteration(
-        db, session_id, history_with_context, model, tools, iterations_left=5
-    ):
-        yield line
+    return history_with_context, tools
 
 
 # one round of one turn - if a tool is called there will be:
@@ -72,7 +86,9 @@ async def stream_and_persist_reply(
 # 3. repeats of the above if the model calls tools in sequence
 # 4. the final assistant message
 # if the model calls tools in parallel, those results are all in (3)
-async def tool_loop_iteration(db, session_id, history_with_context, model, tools, iterations_left):
+async def __tool_loop_iteration(
+    db, session_id, history_with_context, model, tools, stream_response, iterations_left
+):
     if iterations_left == 0:
         yield json.dumps({"error": "maximum tool calls exceeded"}) + "\n"
         return
@@ -82,12 +98,11 @@ async def tool_loop_iteration(db, session_id, history_with_context, model, tools
     tool_results = []
 
     # the streamed response from ollama.py. includes the tool responses
-    async for line in stream_chat_completion(history_with_context, model, tools, db):
-        event = json.loads(line)
+    async for event in get_ollama_response(history_with_context, model, stream_response, tools):
         # normal message text
         if "data" in event:
             assistant_reply += event["data"]
-            yield line
+            yield json.dumps(event) + "\n"
 
         # an announcement that tool calls are happening
         elif "tool_calls" in event:
@@ -122,36 +137,34 @@ async def tool_loop_iteration(db, session_id, history_with_context, model, tools
                         }
                     )
                 ) + "\n"
-
-        # a result from a single tool call
-        elif "tool_result" in event:
-            tool_message = await __save_message(
-                db=db,
-                session_id=session_id,
-                role="tool",
-                content={
-                    "name": event["tool_result"]["name"],
-                    "arguments": event["tool_result"]["arguments"],
-                    "result": event["tool_result"]["result"],
-                },
-            )
-            tool_results.append(tool_message)
-            yield (
-                json.dumps(
-                    {
-                        "tool_result": {
-                            "name": event["tool_result"]["name"],
-                            "result": event["tool_result"]["result"],
-                        }
-                    }
+            async for tool_result in __execute_tools(tool_calls=event["tool_calls"], db=db):
+                tool_message = await __save_message(
+                    db=db,
+                    session_id=session_id,
+                    role="tool",
+                    content={
+                        "name": tool_result["name"],
+                        "arguments": tool_result["arguments"],
+                        "result": tool_result["result"],
+                    },
                 )
-                + "\n"
-            )
+                tool_results.append(tool_message)
+                yield (
+                    json.dumps(
+                        {
+                            "tool_result": {
+                                "name": tool_result["name"],
+                                "result": tool_result["result"],
+                            }
+                        }
+                    )
+                    + "\n"
+                )
 
         # an error occurred
         elif "error" in event:
             assistant_reply += f"\n\n[error: {event['error']}]"
-            yield line
+            yield json.dumps(event) + "\n"
 
         # message is over
         elif event.get("done"):
@@ -163,7 +176,7 @@ async def tool_loop_iteration(db, session_id, history_with_context, model, tools
             __message_entity_to_chat_item(assistant_message),
             *(__message_entity_to_chat_item(tool_message) for tool_message in tool_results),
         ]
-        async for line in tool_loop_iteration(
+        async for line in __tool_loop_iteration(
             db, session_id, next_history, model, tools, iterations_left - 1
         ):
             yield line
@@ -185,7 +198,24 @@ async def tool_loop_iteration(db, session_id, history_with_context, model, tools
     )
 
 
-async def get_token_usage(db, session_id: int):
+# runs tool calls in parallel, yields on each one's completion
+async def __execute_tools(tool_calls, db):
+    tasks = [asyncio.create_task(__run_tool(tc, db)) for tc in tool_calls]
+    for task in asyncio.as_completed(tasks):
+        tool_call, result = await task
+        yield {
+            "name": tool_call["name"],
+            "arguments": tool_call["arguments"],
+            "result": result,
+        }
+
+
+async def __run_tool(tc, db):
+    result = await execute_tool(name=tc["name"], arguments=tc["arguments"], db=db)
+    return tc, result
+
+
+async def __get_token_usage(db, session_id: int):
     last_with_tokens = (
         await db.exec(
             select(Message)
@@ -197,7 +227,7 @@ async def get_token_usage(db, session_id: int):
     return last_with_tokens.tokens if last_with_tokens else 0
 
 
-async def compact_chat_messages(db, session_id: int, model: str, usage: int):
+async def __compact_chat_messages(db, session_id: int, model: str, usage: int):
     yield json.dumps({"compacting": {"in_progress": True}}) + "\n"
     statement = (
         select(Message)
@@ -223,7 +253,7 @@ async def compact_chat_messages(db, session_id: int, model: str, usage: int):
             f"Transcript:\n{formatted_history}"
         ),
     }
-    response = chat_sync(history=[compact_prompt], model=model, tools=None)
+    response = get_ollama_response(history=[compact_prompt], model=model, stream=False, tools=None)
 
     compacted_message = await __save_message(
         db=db,
